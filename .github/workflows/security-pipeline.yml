@@ -1,0 +1,77 @@
+name: Security Pipeline
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npm audit --audit-level high
+
+  snyk-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --all-projects
+  dast-scan:
+    runs-on: self-hosted
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=5
+    env:
+      PORT: 3333
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres?schema=public
+      DATABASE_SCHEMA: public
+      CORS_ORIGINS: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: npm run start > /tmp/mas-api.log 2>&1 &
+      - run: |
+          for i in {1..30}; do
+            if curl -sf http://localhost:3333/api-json >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not start" >&2
+          exit 1
+      - uses: zaproxy/action-api-scan@v0.9.0
+        with:
+          target: http://localhost:3333/api-json
+          format: openapi
+          cmd_options: '-a -l High'
+          fail_action: true
