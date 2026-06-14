@@ -29,7 +29,8 @@
     "@types/supertest",
     "ts-jest",
     "ts-node",
-    "tsconfig-paths"
+    "tsconfig-paths",
+    "@google/generative-ai"
   ],
   "treatConfigHintsAsErrors": false,
   "rules": {
