@@ -8,8 +8,6 @@
     "@nestjs/platform-express",
     "@nestjs/throttler",
     "@nestjs/terminus",
-    "@prisma/adapter-pg",
-    "@prisma/client",
     "@ts-rest/core",
     "@ts-rest/nest",
     "dd-trace",

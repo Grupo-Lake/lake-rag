@@ -1,7 +1,7 @@
 import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
-import { defineConfig } from 'eslint/config'; // <-- Novo import oficial do ESLint
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
