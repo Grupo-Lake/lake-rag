@@ -2,13 +2,17 @@ import { Injectable } from '@nestjs/common';
 
 import { AppLogger } from '@/global/core/services/observability/logger.service';
 import { VectorDbDatasource } from '@/global/infrastructure/datasource/vector-db.datasource';
-import { type ChunkPayload } from '@/shared/collections.constants';
+import {
+  type ChunkPayload,
+  FILE_TYPES,
+  type FileType,
+} from '@/shared/collections.constants';
 
 export interface RagSearchResult {
   score: number;
   title: string;
   filename: string;
-  file_type: string;
+  file_type: FileType;
   text: string;
   chunk_index: number;
   chunk_total: number;
@@ -36,24 +40,39 @@ export class RagVectorRepository {
       ),
     );
 
+    const rejectedCount = settled.filter((r) => r.status === 'rejected').length;
+
+    settled.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        this.logger.warn(
+          `RagVectorRepository: search failed for collection "${collections[i]}"`,
+          r.reason instanceof Error ? r.reason.message : String(r.reason),
+        );
+      }
+    });
+
+    if (rejectedCount === collections.length && collections.length > 0) {
+      throw new Error(
+        'All vector database collection searches failed — Qdrant may be unreachable',
+      );
+    }
+
     return settled
-      .flatMap((r, i) => {
+      .flatMap((r) => {
         if (r.status === 'rejected') {
-          this.logger.warn(
-            `RagVectorRepository: search failed for collection "${collections[i]}"`,
-            r.reason instanceof Error ? r.reason.message : String(r.reason),
-          );
           return [];
         }
         return r.value;
       })
       .map((r) => {
-        const payload = r.payload as unknown as ChunkPayload;
+        const payload = (r.payload ?? {}) as unknown as ChunkPayload;
         return {
           score: r.score,
           title: payload.title ?? '',
           filename: payload.filename ?? '',
-          file_type: payload.file_type ?? '',
+          file_type: (FILE_TYPES.includes(payload.file_type as FileType)
+            ? payload.file_type
+            : 'txt') as FileType,
           text: payload.text ?? '',
           chunk_index: payload.chunk_index ?? 0,
           chunk_total: payload.chunk_total ?? 0,

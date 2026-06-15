@@ -121,4 +121,12 @@ describe('RagVectorRepository', () => {
       expect.any(String),
     );
   });
+
+  it('throws when all collection searches fail', async () => {
+    mockSearch.mockRejectedValue(new Error('connection refused'));
+
+    await expect(
+      repo.searchCollections(['documents_pdf', 'documents_txt'], [0.1], 5),
+    ).rejects.toThrow('All vector database collection searches failed');
+  });
 });
