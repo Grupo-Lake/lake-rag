@@ -3,10 +3,12 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { GlobalModule } from './global/global.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 
 @Module({
   imports: [
     GlobalModule,
+    DocumentsModule,
     ThrottlerModule.forRoot({
       throttlers: [
         {
