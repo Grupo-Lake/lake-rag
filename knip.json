@@ -30,7 +30,8 @@
     "ts-jest",
     "ts-node",
     "tsconfig-paths",
-    "@google/generative-ai"
+    "@google/generative-ai",
+    "@qdrant/js-client-rest"
   ],
   "treatConfigHintsAsErrors": false,
   "rules": {
