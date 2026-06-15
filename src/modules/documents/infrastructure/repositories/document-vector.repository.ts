@@ -2,16 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 
 import { VectorDbDatasource } from '@/global/infrastructure/datasource/vector-db.datasource';
+import { type ChunkPayload } from '@/shared/collections.constants';
 
-export interface ChunkPayload {
-  title: string;
-  filename: string;
-  file_type: string;
-  chunk_index: number;
-  chunk_total: number;
-  text: string;
-  ingested_at: string;
-}
+export type { ChunkPayload };
 
 export interface SearchResult {
   score: number;

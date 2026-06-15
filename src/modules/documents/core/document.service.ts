@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 
 import { EmbeddingService } from '@/modules/embedding/core/embedding.service';
+import {
+  ALL_COLLECTIONS,
+  COLLECTION_MAP,
+  type FileType,
+} from '@/shared/collections.constants';
 
 import { DocumentVectorRepository } from '../infrastructure/repositories/document-vector.repository';
 import { DocxParser } from './parsers/docx.parser';
@@ -8,17 +13,6 @@ import { MarkdownParser } from './parsers/markdown.parser';
 import { PdfParser } from './parsers/pdf.parser';
 import { TxtParser } from './parsers/txt.parser';
 import { ChunkService } from './services/chunk.service';
-
-type FileType = 'txt' | 'md' | 'pdf' | 'docx';
-
-const COLLECTION_MAP: Record<FileType, string> = {
-  txt: 'documents_txt',
-  md: 'documents_md',
-  pdf: 'documents_pdf',
-  docx: 'documents_docx',
-};
-
-const ALL_COLLECTIONS = Object.values(COLLECTION_MAP);
 
 export interface IngestResult {
   title: string;
