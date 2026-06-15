@@ -4,6 +4,7 @@ import { EmbeddingService } from '@/modules/embedding/core/embedding.service';
 import {
   ALL_COLLECTIONS,
   COLLECTION_MAP,
+  type FileType,
 } from '@/shared/collections.constants';
 
 import {
@@ -38,13 +39,14 @@ export class RagService {
     const rawResults = await this.ragVectorRepository.searchCollections(
       collections,
       queryVector,
-      dto.top_k,
+      dto.top_k * 3,
     );
 
     const sources: RagResultSource[] = rawResults
       .filter((r) => r.score >= dto.min_score)
       .sort((a, b) => b.score - a.score)
-      .slice(0, dto.top_k);
+      .slice(0, dto.top_k)
+      .map((r) => ({ ...r, file_type: r.file_type as FileType }));
 
     return {
       query: dto.query,
