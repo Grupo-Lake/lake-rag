@@ -4,11 +4,13 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { GlobalModule } from './global/global.module';
 import { DocumentsModule } from './modules/documents/documents.module';
+import { RagModule } from './modules/rag/rag.module';
 
 @Module({
   imports: [
     GlobalModule,
     DocumentsModule,
+    RagModule,
     ThrottlerModule.forRoot({
       throttlers: [
         {
