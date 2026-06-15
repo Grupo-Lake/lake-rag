@@ -1,3 +1,4 @@
+import { AppLogger } from '@/global/core/services/observability/logger.service';
 import { VectorDbDatasource } from '@/global/infrastructure/datasource/vector-db.datasource';
 
 import { RagVectorRepository } from './rag-vector.repository';
@@ -7,12 +8,19 @@ const mockVectorDb = {
   client: { search: mockSearch },
 } as unknown as VectorDbDatasource;
 
+const mockWarn = jest.fn();
+const mockLogger = { warn: mockWarn };
+
 describe('RagVectorRepository', () => {
   let repo: RagVectorRepository;
 
   beforeEach(() => {
     mockSearch.mockReset();
-    repo = new RagVectorRepository(mockVectorDb);
+    mockWarn.mockReset();
+    repo = new RagVectorRepository(
+      mockVectorDb as unknown as VectorDbDatasource,
+      mockLogger as unknown as AppLogger,
+    );
   });
 
   it('searches each collection in parallel and merges results', async () => {
@@ -99,5 +107,18 @@ describe('RagVectorRepository', () => {
     const results = await repo.searchCollections(['documents_pdf'], [0.1], 5);
 
     expect(results).toHaveLength(0);
+  });
+
+  it('logs a warning when a collection search fails', async () => {
+    mockSearch.mockRejectedValueOnce(new Error('connection refused'));
+    mockSearch.mockResolvedValueOnce([]);
+
+    await repo.searchCollections(['documents_pdf', 'documents_txt'], [0.1], 5);
+
+    expect(mockWarn).toHaveBeenCalledTimes(1);
+    expect(mockWarn).toHaveBeenCalledWith(
+      expect.stringContaining('documents_pdf'),
+      expect.any(String),
+    );
   });
 });

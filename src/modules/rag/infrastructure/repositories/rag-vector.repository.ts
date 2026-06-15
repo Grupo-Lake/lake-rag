@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { AppLogger } from '@/global/core/services/observability/logger.service';
 import { VectorDbDatasource } from '@/global/infrastructure/datasource/vector-db.datasource';
 import { type ChunkPayload } from '@/shared/collections.constants';
 
@@ -15,7 +16,10 @@ export interface RagSearchResult {
 
 @Injectable()
 export class RagVectorRepository {
-  constructor(private readonly vectorDb: VectorDbDatasource) {}
+  constructor(
+    private readonly vectorDb: VectorDbDatasource,
+    private readonly logger: AppLogger,
+  ) {}
 
   async searchCollections(
     collections: string[],
@@ -33,17 +37,26 @@ export class RagVectorRepository {
     );
 
     return settled
-      .flatMap((r) => (r.status === 'fulfilled' ? r.value : []))
+      .flatMap((r, i) => {
+        if (r.status === 'rejected') {
+          this.logger.warn(
+            `RagVectorRepository: search failed for collection "${collections[i]}"`,
+            r.reason instanceof Error ? r.reason.message : String(r.reason),
+          );
+          return [];
+        }
+        return r.value;
+      })
       .map((r) => {
         const payload = r.payload as unknown as ChunkPayload;
         return {
           score: r.score,
-          title: payload.title,
-          filename: payload.filename,
-          file_type: payload.file_type,
-          text: payload.text,
-          chunk_index: payload.chunk_index,
-          chunk_total: payload.chunk_total,
+          title: payload.title ?? '',
+          filename: payload.filename ?? '',
+          file_type: payload.file_type ?? '',
+          text: payload.text ?? '',
+          chunk_index: payload.chunk_index ?? 0,
+          chunk_total: payload.chunk_total ?? 0,
         };
       });
   }
