@@ -4,8 +4,6 @@ import { randomUUID } from 'crypto';
 import { VectorDbDatasource } from '@/global/infrastructure/datasource/vector-db.datasource';
 import { type ChunkPayload } from '@/shared/collections.constants';
 
-export type { ChunkPayload };
-
 export interface SearchResult {
   score: number;
   payload: ChunkPayload;
