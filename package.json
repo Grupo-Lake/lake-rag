@@ -24,6 +24,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/terminus": "^11.1.0",
     "@nestjs/throttler": "^6.5.0",
+    "@qdrant/js-client-rest": "1.18.0",
     "@ts-rest/core": "^3.52.1",
     "@ts-rest/nest": "^3.52.1",
     "dd-trace": "^5.9.0",

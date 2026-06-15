@@ -3,27 +3,29 @@ import { z } from 'zod';
 
 const configSchema = z
   .object({
-    NODE_ENV: z.enum(['development', 'test', 'production']).optional(),
+    // Application
     PORT: z.coerce.number().int().positive().default(3333),
-    DATABASE_URL: z.string().min(1).optional(),
-    DATABASE_SCHEMA: z.string().default('postgres'),
+    NODE_ENV: z.enum(['development', 'test', 'production']).optional(),
     CORS_ORIGINS: z.string().optional(),
+    // Observability
     SERVICE_NAME: z.string().optional(),
     LOG_LEVEL: z.string().optional(),
     LOG_PRETTY: z.string().optional(),
-    DD_TRACE_ENABLED: z.string().optional(),
-    DD_AGENT_HOST: z.string().optional(),
-    DD_TRACE_AGENT_PORT: z.coerce.number().int().positive().optional(),
-    DD_ENV: z.string().optional(),
-    DD_VERSION: z.string().optional(),
+
+    // Vector DB
+    QDRANT_HOST: z.string().default('localhost'),
+    QDRANT_PORT: z.coerce.number().int().positive().default(6333),
+
+    // AI Providers
+    GEMINI_API_KEY: z.string(),
   })
   .passthrough()
   .superRefine((values, ctx) => {
-    if (values.NODE_ENV !== 'test' && !values.DATABASE_URL) {
+    if (values.NODE_ENV !== 'test' && !values.QDRANT_HOST) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'DATABASE_URL is required',
-        path: ['DATABASE_URL'],
+        message: 'QDRANT_HOST is required',
+        path: ['QDRANT_HOST'],
       });
     }
   });

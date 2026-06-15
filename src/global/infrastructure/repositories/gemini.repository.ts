@@ -1,14 +1,14 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
+import { ConfigService } from '@/global/core/services/config.service';
 
 @Injectable()
 export class GeminiRepository {
   private readonly ai: GoogleGenerativeAI;
 
-  constructor(
-    @Inject('GEMINI_API_KEY') private readonly GEMINI_API_KEY: string,
-  ) {
-    this.ai = new GoogleGenerativeAI(this.GEMINI_API_KEY);
+  constructor(private readonly configService: ConfigService) {
+    this.ai = new GoogleGenerativeAI(this.configService.get('GEMINI_API_KEY'));
   }
 
   async embedding(text: string): Promise<number[]> {
