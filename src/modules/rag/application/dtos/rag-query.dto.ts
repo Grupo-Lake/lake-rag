@@ -1,7 +1,7 @@
 // src/modules/rag/application/dtos/rag-query.dto.ts
 import { z } from 'zod';
 
-import { FILE_TYPES } from '@/shared/collections.constants';
+import { FILE_TYPES, type FileType } from '@/shared/collections.constants';
 
 export const RagQuerySchema = z.object({
   query: z.string().min(1, 'query must not be empty'),
@@ -16,7 +16,7 @@ export interface RagResultSource {
   score: number;
   title: string;
   filename: string;
-  file_type: string;
+  file_type: FileType;
   text: string;
   chunk_index: number;
   chunk_total: number;
